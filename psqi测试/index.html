@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 睡眠健康综合评估（自动跳转 · 个性图片版）</title>
+    <style>
+        :root {
+            --bg: #f5f7fa;
+            --title-bar: #4a6fa5;
+            --card-bg: #ffffff;
+            --card-border: #dce1e8;
+            --text-dark: #2d3748;
+            --text-medium: #4a5568;
+            --text-light: #5a6275;
+            --text-muted: #a0aec0;
+            --btn-prev-bg: #e2e8f0;
+            --btn-prev-text: #4a5568;
+            --btn-prev-hover: #cbd5e0;
+            --btn-next-bg: #667eea;
+            --btn-next-hover: #5a67d8;
+            --btn-result-bg: #48bb78;
+            --btn-result-hover: #38a169;
+            --progress-bg: #e2e8f0;
+            --progress-fill: #48bb78;
+            --option-bg: #f9fafb;
+            --option-border: #e2e8f0;
+            --option-hover-bg: #eef2ff;
+            --scrollbar-thumb: #c1c9d6;
+            --scrollbar-track: #f1f3f6;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12),0 4px 8px rgba(0,0,0,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.25s ease;
+            --transition-slow: 0.35s cubic-bezier(0.4,0,0.2,1);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        html{font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+        body{
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","微软雅黑","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;
+            background: linear-gradient(180deg,#eef1f6 0%,#f5f7fa 30%,#f5f7fa 100%);
+            min-height:100vh;display:flex;justify-content:center;align-items:flex-start;
+            padding:20px 16px 40px;color:var(--text-dark);line-height:1.6;
+        }
+        .app-container{
+            width:100%;max-width:700px;background:var(--bg);border-radius:var(--radius-lg);
+            box-shadow:var(--shadow-lg);overflow:hidden;display:flex;flex-direction:column;
+            min-height:680px;transition:box-shadow var(--transition-normal);
+        }
+        .app-container:hover{box-shadow:0 12px 32px rgba(0,0,0,0.14),0 6px 12px rgba(0,0,0,0.08);}
+        .title-bar{
+            background:linear-gradient(135deg,#4a6fa5 0%,#3d5d8a 40%,#4a6fa5 100%);
+            height:80px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+            position:relative;overflow:hidden;
+        }
+        .title-bar::before{
+            content:'';position:absolute;top:-50%;left:-30%;width:160%;height:200%;
+            background:radial-gradient(ellipse at center,rgba(255,255,255,0.06) 0%,transparent 65%);
+            pointer-events:none;
+        }
+        .title-bar::after{
+            content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+            background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.3) 30%,rgba(255,255,255,0.5) 50%,rgba(255,255,255,0.3) 70%,transparent 100%);
+        }
+        .title-bar .title-text{
+            font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:0.03em;
+            position:relative;z-index:1;display:flex;align-items:center;gap:8px;
+        }
+        .title-bar .title-icon{font-size:1.5rem;animation:float 3s ease-in-out infinite;}
+        @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+        .progress-area{
+            background:#eef1f6;padding:14px 30px;display:flex;align-items:center;
+            justify-content:space-between;gap:16px;flex-shrink:0;flex-wrap:wrap;
+        }
+        .progress-label{font-size:0.85rem;color:var(--text-light);font-weight:500;white-space:nowrap;letter-spacing:0.02em;}
+        .progress-bar-outer{flex:1;min-width:120px;height:12px;background:var(--progress-bg);border-radius:10px;overflow:hidden;position:relative;}
+        .progress-bar-inner{
+            height:100%;background:linear-gradient(90deg,#48bb78 0%,#38a169 100%);
+            border-radius:10px;transition:width var(--transition-slow);position:relative;
+        }
+        .progress-bar-inner::after{
+            content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+            background:linear-gradient(180deg,rgba(255,255,255,0.25) 0%,transparent 50%,rgba(0,0,0,0.08) 100%);
+            border-radius:10px;
+        }
+        .card-wrapper{flex:1;padding:20px 30px 14px;display:flex;flex-direction:column;min-height:0;}
+        .card{
+            flex:1;background:var(--card-bg);border-radius:var(--radius-md);border:1px solid var(--card-border);
+            box-shadow:var(--shadow-sm);padding:28px 24px 22px;display:flex;flex-direction:column;
+            transition:all var(--transition-normal);min-height:0;position:relative;
+        }
+        .card.result-mode{overflow-y:auto;max-height:52vh;scroll-behavior:smooth;}
+        @media(min-height:900px){.card.result-mode{max-height:58vh;}}
+        @media(max-height:700px){.card.result-mode{max-height:44vh;}}
+        .question-label{font-size:1.05rem;font-weight:600;color:var(--text-dark);margin-bottom:20px;line-height:1.7;letter-spacing:0.015em;word-break:break-word;}
+        .question-number{display:inline-block;background:#eef2ff;color:#4a6fa5;font-weight:700;font-size:0.85rem;padding:3px 10px;border-radius:20px;margin-right:6px;letter-spacing:0.04em;}
+        .options-container{display:flex;flex-direction:column;gap:10px;flex:1;}
+        .option-card{
+            display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--option-bg);
+            border:1.5px solid var(--option-border);border-radius:var(--radius-sm);cursor:pointer;
+            transition:all var(--transition-fast);user-select:none;-webkit-tap-highlight-color:transparent;position:relative;
+        }
+        .option-card:hover{background:var(--option-hover-bg);border-color:#c3d0e8;box-shadow:var(--shadow-sm);transform:translateY(-1px);}
+        .option-card:active{transform:translateY(0);box-shadow:none;}
+        .option-card.selected{background:#eef2ff;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.1);animation:selectPulse 0.35s ease;}
+        @keyframes selectPulse{0%{box-shadow:0 0 0 0px rgba(102,126,234,0.35);}100%{box-shadow:0 0 0 3px rgba(102,126,234,0.1);}}
+        .option-radio{
+            width:22px;height:22px;border-radius:50%;border:2px solid #c1c9d6;flex-shrink:0;
+            display:flex;align-items:center;justify-content:center;transition:all var(--transition-fast);position:relative;
+        }
+        .option-card.selected .option-radio{border-color:#667eea;background:#667eea;}
+        .option-card.selected .option-radio::after{
+            content:'';width:8px;height:8px;background:#fff;border-radius:50%;animation:dotIn 0.25s ease;
+        }
+        @keyframes dotIn{0%{transform:scale(0);opacity:0;}70%{transform:scale(1.3);}100%{transform:scale(1);opacity:1;}}
+        .option-text{font-size:0.95rem;color:var(--text-medium);font-weight:500;letter-spacing:0.015em;line-height:1.5;}
+        .option-card.selected .option-text{color:#3d4f7c;font-weight:600;}
+        .option-letter{font-weight:700;color:#667eea;font-size:0.9rem;margin-right:2px;min-width:20px;}
+        .nav-area{display:flex;justify-content:space-between;align-items:center;padding:10px 30px 20px;gap:12px;flex-shrink:0;flex-wrap:wrap;}
+        .btn{
+            font-family:inherit;font-size:0.95rem;font-weight:600;padding:10px 22px;border-radius:25px;
+            border:none;cursor:pointer;letter-spacing:0.025em;transition:all var(--transition-fast);
+            white-space:nowrap;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;
+            outline:none;display:inline-flex;align-items:center;gap:6px;
+        }
+        .btn:focus-visible{box-shadow:0 0 0 3px rgba(102,126,234,0.3);outline:2px solid rgba(102,126,234,0.5);outline-offset:2px;}
+        .btn-prev{background:var(--btn-prev-bg);color:var(--btn-prev-text);}
+        .btn-prev:hover:not(:disabled){background:var(--btn-prev-hover);transform:translateX(-2px);box-shadow:var(--shadow-sm);}
+        .btn-prev:active:not(:disabled){transform:translateX(0);box-shadow:none;}
+        .btn-prev:disabled{opacity:0.4;cursor:not-allowed;filter:grayscale(20%);}
+        .btn-next{background:var(--btn-next-bg);color:#fff;box-shadow:0 3px 10px rgba(102,126,234,0.3);}
+        .btn-next:hover{background:var(--btn-next-hover);transform:translateX(2px);box-shadow:0 5px 16px rgba(102,126,234,0.4);}
+        .btn-next:active{transform:translateX(0);box-shadow:0 2px 6px rgba(102,126,234,0.25);}
+        .btn-result{background:var(--btn-result-bg);color:#fff;box-shadow:0 3px 10px rgba(72,187,120,0.3);animation:gentleGlow 2.5s ease-in-out infinite;}
+        @keyframes gentleGlow{0%,100%{box-shadow:0 3px 10px rgba(72,187,120,0.3);}50%{box-shadow:0 5px 20px rgba(72,187,120,0.5);}}
+        .btn-result:hover{background:var(--btn-result-hover);transform:translateY(-2px);box-shadow:0 6px 20px rgba(72,187,120,0.45);}
+        .btn-result:active{transform:translateY(0);box-shadow:0 2px 8px rgba(72,187,120,0.3);}
+        .btn-restart{background:#fff;color:#4a6fa5;border:2px solid #4a6fa5;}
+        .btn-restart:hover{background:#eef2ff;transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+        .btn-restart:active{transform:translateY(0);box-shadow:none;}
+
+        /* 结果页图片样式 */
+        .result-image-container {
+            text-align: center;
+            margin: 8px 0 16px;
+        }
+        .result-image-container img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            object-fit: contain;
+        }
+        .result-placeholder{
+            text-align:center;color:var(--text-muted);font-size:0.85rem;padding:8px 0 14px;letter-spacing:0.03em;opacity:0.7;
+        }
+        .result-content{font-size:0.9rem;color:var(--text-dark);line-height:1.75;white-space:pre-wrap;word-break:break-word;letter-spacing:0.015em;}
+        .result-content .highlight-code{display:inline-block;background:#eef2ff;color:#4a6fa5;font-weight:700;padding:2px 10px;border-radius:6px;letter-spacing:0.05em;}
+        .result-content .tier-badge{display:inline-block;padding:3px 12px;border-radius:14px;font-weight:700;font-size:0.82rem;letter-spacing:0.04em;}
+        .tier-health{background:#e6ffed;color:#1a7a3a;}
+        .tier-watch{background:#fff8e6;color:#b87a14;}
+        .tier-warning{background:#ffe8e8;color:#c0392b;}
+        .modal-overlay{
+            position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(30,35,45,0.55);z-index:1000;
+            display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease;padding:20px;
+        }
+        @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+        .modal-dialog{background:#fff;border-radius:var(--radius-md);padding:26px 24px 20px;max-width:440px;width:100%;box-shadow:var(--shadow-lg);animation:slideUp 0.3s ease;text-align:center;}
+        @keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+        .modal-icon{font-size:2.5rem;margin-bottom:8px;}
+        .modal-title{font-weight:700;font-size:1.05rem;color:#c0392b;margin-bottom:8px;}
+        .modal-body{font-size:0.88rem;color:#4a5568;margin-bottom:18px;line-height:1.6;max-height:180px;overflow-y:auto;}
+        .modal-btn{font-family:inherit;font-weight:600;font-size:0.9rem;padding:9px 28px;border-radius:22px;border:none;cursor:pointer;background:#667eea;color:#fff;letter-spacing:0.025em;transition:all var(--transition-fast);}
+        .modal-btn:hover{background:#5a67d8;box-shadow:0 4px 14px rgba(102,126,234,0.4);}
+        .card.result-mode::-webkit-scrollbar{width:6px;}
+        .card.result-mode::-webkit-scrollbar-track{background:transparent;border-radius:3px;}
+        .card.result-mode::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:3px;}
+        .card.result-mode::-webkit-scrollbar-thumb:hover{background:#a8b0bd;}
+        .modal-body::-webkit-scrollbar{width:4px;}
+        .modal-body::-webkit-scrollbar-track{background:transparent;border-radius:2px;}
+        .modal-body::-webkit-scrollbar-thumb{background:#d0d5dd;border-radius:2px;}
+        @media(max-width:600px){
+            body{padding:8px 6px 24px;}
+            .app-container{border-radius:var(--radius-md);min-height:auto;}
+            .title-bar{height:60px;}
+            .title-bar .title-text{font-size:1.05rem;}
+            .title-bar .title-icon{font-size:1.2rem;}
+            .progress-area{padding:10px 16px;gap:10px;}
+            .progress-label{font-size:0.78rem;}
+            .progress-bar-outer{height:10px;min-width:80px;}
+            .card-wrapper{padding:12px 14px 8px;}
+            .card{padding:18px 14px 16px;border-radius:var(--radius-sm);}
+            .question-label{font-size:0.92rem;margin-bottom:14px;}
+            .option-card{padding:11px 14px;gap:10px;}
+            .option-text{font-size:0.85rem;}
+            .option-radio{width:18px;height:18px;}
+            .option-card.selected .option-radio::after{width:6px;height:6px;}
+            .nav-area{padding:8px 14px 14px;gap:8px;}
+            .btn{font-size:0.82rem;padding:8px 16px;border-radius:20px;}
+            .card.result-mode{max-height:50vh;}
+            .result-content{font-size:0.82rem;}
+            .result-image-container img { max-height:160px; }
+        }
+        @media(max-width:380px){
+            .title-bar{height:50px;}
+            .title-bar .title-text{font-size:0.9rem;letter-spacing:0.01em;}
+            .btn{font-size:0.76rem;padding:7px 13px;border-radius:18px;}
+            .nav-area{gap:6px;}
+            .option-card{padding:10px 11px;gap:8px;}
+            .option-text{font-size:0.78rem;}
+            .question-label{font-size:0.84rem;}
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="appContainer">
+    <div class="title-bar">
+        <span class="title-text"><span class="title-icon">🌙</span> 睡眠健康综合评估</span>
+    </div>
+    <div class="progress-area">
+        <span class="progress-label" id="progressLabel">第 1 / 33 题</span>
+        <div class="progress-bar-outer">
+            <div class="progress-bar-inner" id="progressBar" style="width:3.03%;"></div>
+        </div>
+    </div>
+    <div class="card-wrapper">
+        <div class="card" id="mainCard"></div>
+    </div>
+    <div class="nav-area" id="navArea">
+        <button class="btn btn-prev" id="btnPrev" disabled>◀ 上一题</button>
+        <button class="btn btn-next" id="btnNext">下一题 ▶</button>
+        <button class="btn btn-result" id="btnResult" style="display:none;">📊 查看评估结果</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" style="display:none;">
+    <div class="modal-dialog">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-title" id="modalTitle">未完成</div>
+        <div class="modal-body" id="modalBody"></div>
+        <button class="modal-btn" id="modalBtn">我知道了</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ==================== 配置区 ====================
+        // ★ 图片基础路径：根据您的目录结构调整
+        // 若HTML与images文件夹同级，请使用 "images/"
+        // 若HTML在子目录，而images在上级，请使用 "../images/"
+        const IMAGE_BASE_PATH = "images/";
+
+        // 睡眠类型字典（不再需要单独配置image字段）
+        const sleepTypes = {
+            "SLDA": { name:"安睡者", tagline:"S速眠+L长夜+D无药+A元气", desc:"入睡快、睡得饱、白天精力充沛，堪称睡眠优等生。", tier:"健康梯队", tierClass:"tier-health" },
+            "SLDF": { name:"慵懒安稳者", tagline:"S+L+D+F", desc:"夜间睡眠质量高，但天生易犯困，白天总有几分慵懒。", tier:"健康梯队", tierClass:"tier-health" },
+            "SMDA": { name:"短时活力者", tagline:"S+S+D+A", desc:"睡眠碎片化却仍能保持白天精力，抗压能力突出。", tier:"健康梯队", tierClass:"tier-health" },
+            "SMDF": { name:"浅眠懒人", tagline:"S+S+D+F", desc:"睡眠浅、易醒，加之白天疲惫，整体状态稍显低迷。", tier:"健康梯队", tierClass:"tier-health" },
+            "MLDA": { name:"熬夜扛造人", tagline:"M难入睡+L整觉+D无药+A", desc:"入睡费劲，但一旦睡着就能睡够，白天尚能应对。", tier:"关注梯队", tierClass:"tier-watch" },
+            "MLDF": { name:"晚睡疲惫星人", tagline:"M+L+D+F", desc:"入睡困难，即使睡足时长，白天依旧疲惫不堪。", tier:"关注梯队", tierClass:"tier-watch" },
+            "MMDA": { name:"间断耐受者", tagline:"M+S+D+A", desc:"入睡难、夜醒多，靠身体硬扛，白天勉强撑住。", tier:"关注梯队", tierClass:"tier-watch" },
+            "MMDF": { name:"亚健康睡客", tagline:"M+S+D+F", desc:"入睡难、易醒、日间乏力，处于睡眠亚健康状态。", tier:"关注梯队", tierClass:"tier-watch" },
+            "MLNA": { name:"药物备选党", tagline:"M+L+N+A", desc:"入睡困难偶尔依赖药物，白天精神状态尚可。", tier:"警戒梯队", tierClass:"tier-warning" },
+            "MLNF": { name:"熬夜药补型", tagline:"M+L+N+F", desc:"入睡困难且长期吃药，白天依旧疲惫，典型熬夜补觉模式。", tier:"警戒梯队", tierClass:"tier-warning" },
+            "MMNA": { name:"断续药眠者", tagline:"M+S+N+A", desc:"入睡难、频繁夜醒，按需服用助眠药物维持。", tier:"警戒梯队", tierClass:"tier-warning" },
+            "MMNF": { name:"重度缺眠者", tagline:"M+S+N+F", desc:"全维度拉垮，PSQI高分典型，常见于大学生/销售/厨师等高负荷人群。", tier:"警戒梯队", tierClass:"tier-warning" },
+            "SLNA": { name:"偶尔用药安稳型", tagline:"S+L+N+A", desc:"睡眠安稳但偶用药物，白天精力充沛，总体风险可控。", tier:"关注梯队", tierClass:"tier-watch" },
+            "SLNF": { name:"安稳但嗜睡用药型", tagline:"S+L+N+F", desc:"睡眠质量尚可但依赖药物，且日间嗜睡明显。", tier:"警戒梯队", tierClass:"tier-warning" },
+            "SMNA": { name:"碎眠用药耐受型", tagline:"S+S+N+A", desc:"睡眠碎片化、依赖药物，但白天仍能保持一定精力。", tier:"警戒梯队", tierClass:"tier-warning" },
+            "SMNF": { name:"浅眠用药疲惫型", tagline:"S+S+N+F", desc:"浅眠、依赖药物、白天极度疲惫，综合状况堪忧。", tier:"警戒梯队", tierClass:"tier-warning" }
+        };
+
+        const questions = [
+            "总体来说，过去一个月我的睡眠质量还不错。",
+            "我对自己近期的睡眠情况基本满意。",
+            "早晨醒来时，我常常觉得神清气爽。",
+            "关灯躺下后，我通常在 15 分钟内就能睡着。",
+            "入睡对我来说并不是一件困难的事，很少为此烦恼。",
+            "躺到床上时，我的大脑很容易放松下来，平静入睡。",
+            "每晚的实际睡眠时间大多超过 7 小时。",
+            "目前的睡眠时长足够支持我白天的正常活动。",
+            "我很少因为担心睡眠不足而感到焦虑。",
+            "躺在床上的时间，大部分都是在睡觉。",
+            "早上醒来后，我通常会直接起床，不会长时间赖床。",
+            "我的实际睡眠时间与卧床时间很接近。",
+            "睡眠过程中，我很少醒来（包括上厕所），睡得比较连续。",
+            "睡觉时呼吸顺畅，没有不舒服的感觉。",
+            "我很少因为过冷、过热或噩梦而打断睡眠。",
+            "过去一个月，我没有用过任何助眠药物（含非处方药）。",
+            "我不需要依靠酒精、褪黑素等来帮助睡眠。",
+            "我入睡可以顺其自然，无需额外物质帮助。",
+            "白天我能比较容易地保持清醒和专注。",
+            "做事情时我精力足够，有热情完成各项任务。",
+            "睡眠问题没有对我的工作或日常生活造成明显影响。",
+            "我的工作或学习节奏相对规律，很少因职业要求牺牲睡眠。",
+            "下班或放学后，我通常能从紧张状态中脱离，身心得到放松。",
+            "职业或学业带来的压力并未明显干扰我的睡眠。",
+            "过去一个月，我大多在午夜 12 点前入睡，很少主动熬夜。",
+            "即使偶尔晚睡，我的入睡时间并未因此变得越来越长，生物钟还算稳定。",
+            "过去一个月，我总体感觉压力水平较低，比较从容。",
+            "睡前 1 小时内，我通常不看手机、电脑或电视，进行无屏幕放松。",
+            "我每日咖啡/茶/功能性饮料摄入不超过一杯，且很少在傍晚后饮用。",
+            "咖啡因对我的睡眠无明显负面影响。",
+            "我的卧室安静、遮光良好、温度舒适，利于入睡。",
+            "无论睡眠时间长短，醒来后我大多觉得精力恢复得不错。",
+            "白天我很少会不由自主地打瞌睡，在安静环境中也能保持清醒。"
+        ];
+
+        const totalQuestions = questions.length;
+
+        // ==================== 状态管理 ====================
+        let answers = new Array(totalQuestions).fill(-1);
+        let currentIndex = 0;
+        let isResultMode = false;
+        let autoAdvanceTimer = null;
+
+        // ==================== DOM 引用 ====================
+        const mainCard = document.getElementById('mainCard');
+        const progressLabel = document.getElementById('progressLabel');
+        const progressBar = document.getElementById('progressBar');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const btnResult = document.getElementById('btnResult');
+        const navArea = document.getElementById('navArea');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const modalBtn = document.getElementById('modalBtn');
+
+        // ==================== 辅助函数 ====================
+        function clearAutoAdvance() {
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+            }
+        }
+
+        function updateProgress() {
+            if (isResultMode) {
+                progressLabel.textContent = '评估完成';
+                progressBar.style.width = '100%';
+                return;
+            }
+            const progress = ((currentIndex + 1) / totalQuestions) * 100;
+            progressBar.style.width = progress.toFixed(2) + '%';
+            progressLabel.textContent = `第 ${currentIndex + 1} / ${totalQuestions} 题`;
+        }
+
+        function updateNavButtons() {
+            if (isResultMode) {
+                btnPrev.style.display = 'none';
+                btnNext.style.display = 'none';
+                btnResult.style.display = 'none';
+                let restartBtn = document.getElementById('btnRestart');
+                if (!restartBtn) {
+                    restartBtn = document.createElement('button');
+                    restartBtn.id = 'btnRestart';
+                    restartBtn.className = 'btn btn-restart';
+                    restartBtn.textContent = '🔄 重新评估';
+                    restartBtn.addEventListener('click', restartSurvey);
+                    navArea.appendChild(restartBtn);
+                }
+                restartBtn.style.display = 'inline-flex';
+                navArea.style.justifyContent = 'center';
+                return;
+            }
+            navArea.style.justifyContent = 'space-between';
+            const restartBtn = document.getElementById('btnRestart');
+            if (restartBtn) restartBtn.style.display = 'none';
+
+            btnPrev.style.display = 'inline-flex';
+            btnPrev.disabled = (currentIndex === 0);
+
+            if (currentIndex === totalQuestions - 1) {
+                btnNext.style.display = 'none';
+                btnResult.style.display = 'inline-flex';
+            } else {
+                btnNext.style.display = 'inline-flex';
+                btnResult.style.display = 'none';
+            }
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // ==================== 核心渲染 ====================
+        function renderQuestion() {
+            clearAutoAdvance();
+            isResultMode = false;
+            mainCard.classList.remove('result-mode');
+            mainCard.style.overflowY = 'visible';
+            mainCard.style.maxHeight = 'none';
+
+            const qText = questions[currentIndex];
+            const selectedVal = answers[currentIndex];
+
+            let html = `
+                <div class="question-label">
+                    <span class="question-number">Q${currentIndex+1}</span>
+                    ${escapeHTML(qText)}
+                </div>
+                <div class="options-container">
+                    <div class="option-card${selectedVal===0?' selected':''}" data-value="0" role="radio" aria-checked="${selectedVal===0}" tabindex="0">
+                        <div class="option-radio"></div>
+                        <span class="option-text"><span class="option-letter">A.</span> 是，这比较符合我</span>
+                    </div>
+                    <div class="option-card${selectedVal===1?' selected':''}" data-value="1" role="radio" aria-checked="${selectedVal===1}" tabindex="0">
+                        <div class="option-radio"></div>
+                        <span class="option-text"><span class="option-letter">B.</span> 不，这不符合我</span>
+                    </div>
+                </div>
+            `;
+            mainCard.innerHTML = html;
+            updateProgress();
+            updateNavButtons();
+
+            const optionCards = mainCard.querySelectorAll('.option-card');
+            optionCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const val = parseInt(this.getAttribute('data-value'));
+                    selectOption(val);
+                });
+                card.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        const val = parseInt(this.getAttribute('data-value'));
+                        selectOption(val);
+                    }
+                });
+            });
+            mainCard.scrollTop = 0;
+        }
+
+        function selectOption(value) {
+            answers[currentIndex] = value;
+            const cards = mainCard.querySelectorAll('.option-card');
+            cards.forEach(card => {
+                const cardVal = parseInt(card.getAttribute('data-value'));
+                if (cardVal === value) {
+                    card.classList.add('selected');
+                    card.setAttribute('aria-checked', 'true');
+                } else {
+                    card.classList.remove('selected');
+                    card.setAttribute('aria-checked', 'false');
+                }
+            });
+
+            clearAutoAdvance();
+            autoAdvanceTimer = setTimeout(() => {
+                autoAdvanceTimer = null;
+                if (isResultMode) return;
+                if (currentIndex < totalQuestions - 1) {
+                    if (answers[currentIndex] === value) {
+                        nextQuestion();
+                    }
+                } else {
+                    const unanswered = getAllUnanswered();
+                    if (unanswered.length === 0 && answers[currentIndex] !== -1) {
+                        showResult();
+                    }
+                }
+            }, 300);
+        }
+
+        function nextQuestion() {
+            clearAutoAdvance();
+            if (currentIndex < totalQuestions - 1) {
+                currentIndex++;
+                renderQuestion();
+                mainCard.scrollTop = 0;
+            }
+        }
+
+        function prevQuestion() {
+            clearAutoAdvance();
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+                mainCard.scrollTop = 0;
+            }
+        }
+
+        function getAllUnanswered() {
+            const unanswered = [];
+            for (let i = 0; i < totalQuestions; i++) {
+                if (answers[i] === -1) unanswered.push(`第 ${i+1} 题`);
+            }
+            return unanswered;
+        }
+
+        function showModal(title, bodyText) {
+            modalTitle.textContent = title;
+            modalBody.textContent = bodyText;
+            modalOverlay.style.display = 'flex';
+            modalBtn.focus();
+        }
+        function hideModal() { modalOverlay.style.display = 'none'; }
+
+        function showResult() {
+            clearAutoAdvance();
+            const unanswered = getAllUnanswered();
+            if (unanswered.length > 0) {
+                let bodyStr = '以下题目尚未回答：\n' + unanswered.join('、');
+                if (unanswered.length > 8) {
+                    bodyStr = '以下题目尚未回答：\n' + unanswered.slice(0,8).join('、') + `\n...等共 ${unanswered.length} 题未答`;
+                }
+                bodyStr += '\n\n请完成所有题目后再查看评估结果。';
+                showModal('未完成', bodyStr);
+                return;
+            }
+
+            const psqiScore = answers.slice(0,21).reduce((s,v)=>s+v,0);
+            const riskScore = answers.slice(21,33).reduce((s,v)=>s+v,0);
+            const totalScore = psqiScore + riskScore;
+
+            const onsetScore   = answers.slice(3,6).reduce((s,v)=>s+v,0);
+            const disorderScore= answers.slice(12,15).reduce((s,v)=>s+v,0);
+            const medScore     = answers.slice(15,18).reduce((s,v)=>s+v,0);
+            const daytimeScore = answers.slice(18,21).reduce((s,v)=>s+v,0);
+
+            const sLetter = onsetScore <= 1 ? 'S' : 'M';
+            const lLetter = disorderScore <= 1 ? 'L' : 'S';
+            const dLetter = medScore === 0 ? 'D' : 'N';
+            const aLetter = daytimeScore === 0 ? 'A' : 'F';
+            const sleepCode = sLetter + lLetter + dLetter + aLetter;
+
+            const typeInfo = sleepTypes[sleepCode] || {
+                name:'未知类型', tagline:'', desc:'未匹配到对应睡眠类型。', tier:'未分类', tierClass:''
+            };
+
+            let level, levelDesc;
+            if (totalScore <= 8) { level='良好'; levelDesc='您的睡眠状况整体较好，请继续保持当前健康习惯。'; }
+            else if (totalScore <= 17) { level='轻度至中度风险'; levelDesc='存在一定的睡眠困扰与风险因素，建议针对性调整生活作息。'; }
+            else if (totalScore <= 26) { level='明显风险'; levelDesc='睡眠问题已对日间功能产生明显影响，需积极改善并考虑专业咨询。'; }
+            else { level='高风险'; levelDesc='多项高风险因素叠加，强烈建议寻求睡眠专科医生帮助。'; }
+
+            const adviceList = [];
+            const occScore = answers.slice(21,24).reduce((s,v)=>s+v,0);
+            if (occScore >= 2) adviceList.push('🔹 职业负荷与警戒状态：您的职业或学业压力已明显干扰睡眠，建议合理规划工作学习节奏，定期放松。');
+            const stayupScore = answers.slice(24,27).reduce((s,v)=>s+v,0);
+            if (stayupScore >= 2 || onsetScore >= 2) adviceList.push('🔹 熬夜与入睡困难：固定就寝和起床时间，避免高频熬夜；建立睡前放松仪式，如冥想、温水泡脚；如有长期入睡困难请及时干预。');
+            const screenScore = answers.slice(27,30).reduce((s,v)=>s+v,0);
+            if (screenScore >= 2) adviceList.push('🔹 屏幕与咖啡因：睡前1小时停止使用电子设备；下午后避免摄入咖啡因，全天咖啡/茶不超过1杯。');
+            const envScore = answers.slice(30,33).reduce((s,v)=>s+v,0);
+            const effScore = answers.slice(9,12).reduce((s,v)=>s+v,0);
+            if (envScore >= 2 || effScore >= 2) adviceList.push('🔹 睡眠环境与效率：改善卧室遮光、隔音与温度；关注睡眠效率与日间嗜睡，如长期卧床却无法入睡，需评估睡眠习惯。');
+            if (adviceList.length === 0) adviceList.push('🔹 您的风险因素较少，继续保持即可。');
+
+            const divider = '─'.repeat(40);
+            const resultText =
+                `🧬 您的睡眠类型：${sleepCode}  ${typeInfo.name}\n` +
+                `   「${typeInfo.tagline}」\n` +
+                `   ${typeInfo.desc}\n` +
+                `   所属梯队：${typeInfo.tier}\n\n` +
+                `${divider}\n` +
+                `📊 综合得分\n` +
+                `   PSQI 核心分：${psqiScore} / 21\n` +
+                `   风险因素分：${riskScore} / 12\n` +
+                `   综合总分：${totalScore} / 33\n` +
+                `   风险等级：${level}\n` +
+                `   ${levelDesc}\n\n` +
+                `${divider}\n` +
+                `💡 重点改善建议：\n` + adviceList.join('\n');
+
+            // 根据睡眠代码自动生成图片路径
+            const imageUrl = IMAGE_BASE_PATH + sleepCode + ".png";
+            renderResult(resultText, imageUrl);
+        }
+
+        function renderResult(resultText, imageUrl) {
+            clearAutoAdvance();
+            isResultMode = true;
+            mainCard.classList.add('result-mode');
+
+            let processedText = resultText
+                .replace(/(所属梯队：)(健康梯队)/g, '$1<span class="tier-badge tier-health">$2</span>')
+                .replace(/(所属梯队：)(关注梯队)/g, '$1<span class="tier-badge tier-watch">$2</span>')
+                .replace(/(所属梯队：)(警戒梯队)/g, '$1<span class="tier-badge tier-warning">$2</span>');
+
+            let imageHtml = '';
+            if (imageUrl && imageUrl.trim() !== '') {
+                imageHtml = `
+                    <div class="result-image-container">
+                        <img src="${imageUrl}" alt="睡眠类型插图" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'result-placeholder\\'>🎨 图片加载失败</div>';">
+                    </div>`;
+            } else {
+                imageHtml = `<div class="result-placeholder">🎨 分析结果如下</div>`;
+            }
+
+            let html = `
+                ${imageHtml}
+                <div class="result-content">${processedText.replace(/\n/g,'<br>')}</div>
+            `;
+            mainCard.innerHTML = html;
+            mainCard.scrollTop = 0;
+            updateProgress();
+            updateNavButtons();
+        }
+
+        function restartSurvey() {
+            clearAutoAdvance();
+            answers = new Array(totalQuestions).fill(-1);
+            currentIndex = 0;
+            isResultMode = false;
+            mainCard.classList.remove('result-mode');
+            mainCard.style.overflowY = 'visible';
+            mainCard.style.maxHeight = 'none';
+            const restartBtn = document.getElementById('btnRestart');
+            if (restartBtn) restartBtn.style.display = 'none';
+            navArea.style.justifyContent = 'space-between';
+            renderQuestion();
+            mainCard.scrollTop = 0;
+            window.scrollTo({ top:0, behavior:'smooth' });
+        }
+
+        // ==================== 事件绑定 ====================
+        btnPrev.addEventListener('click', prevQuestion);
+        btnNext.addEventListener('click', nextQuestion);
+        btnResult.addEventListener('click', showResult);
+        modalBtn.addEventListener('click', hideModal);
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) hideModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (isResultMode) return;
+            if (modalOverlay.style.display === 'flex') {
+                if (e.key === 'Escape') hideModal();
+                return;
+            }
+            if (e.key === 'ArrowRight' && currentIndex < totalQuestions-1) {
+                e.preventDefault(); nextQuestion();
+            } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                e.preventDefault(); prevQuestion();
+            } else if (e.key === '1' || e.key === 'a' || e.key === 'A') {
+                e.preventDefault(); selectOption(0);
+            } else if (e.key === '2' || e.key === 'b' || e.key === 'B') {
+                e.preventDefault(); selectOption(1);
+            } else if (e.key === 'Enter' && currentIndex === totalQuestions-1 && !isResultMode) {
+                const unanswered = getAllUnanswered();
+                if (unanswered.length === 0) { e.preventDefault(); showResult(); }
+            }
+        });
+
+        // 初始化
+        function init() {
+            renderQuestion();
+            updateProgress();
+            updateNavButtons();
+        }
+        init();
+        console.log('🌙 睡眠健康综合评估（自动匹配图片版）已启动');
+        console.log('📁 图片路径规则：' + IMAGE_BASE_PATH + '睡眠代码.png（如 ' + IMAGE_BASE_PATH + 'MLDA.png）');
+    })();
+</script>
+</body>
+</html>
